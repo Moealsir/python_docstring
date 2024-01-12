@@ -5,9 +5,9 @@ import shutil
 def generate_docstring(node):
     """Generate a docstring for the given AST node."""
     if isinstance(node, ast.FunctionDef):
-        return f'"""\n{node.name} - Add a brief description here.\n"""'
+        return f'\n        {node.name} - Add a brief here.\n        '
     elif isinstance(node, ast.ClassDef):
-        return f'"""\n{node.name} - Add a brief description here.\n"""'
+        return f'\n    {node.name} - Add a brief description here.\n    '
     else:
         return None
 
