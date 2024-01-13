@@ -4,9 +4,17 @@ import shutil
 
 def generate_docstring(node):
     """Generate a docstring for the given AST node."""
-    if isinstance(node, ast.FunctionDef):
-        return f'\n        {node.name} - Add a brief here.\n        '
-    elif isinstance(node, ast.ClassDef):
+    indent = ''
+
+    # Check if the function is at the beginning of the line or indented
+    if node.col_offset == 0:
+        indent = ''
+        return f'\n{indent}    {node.name} - Add a brief here.\n    {indent}', indent
+    elif node.col_offset > 0:
+        indent = ' ' * node.col_offset
+        return f'\n{indent}    {node.name} - Add a brief here.\n    {indent}', indent
+
+    if isinstance(node, ast.ClassDef):
         return f'\n    {node.name} - Add a brief description here.\n    '
     else:
         return None
@@ -30,9 +38,17 @@ def process_file(file_path, option, target_name=None):
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
             if option == 1 or (option == 2 and node.name == target_name):
-                docstring = generate_docstring(node)
+                (docstring, indent) = generate_docstring(node)
                 if docstring:
-                    node.body.insert(0, ast.Expr(value=ast.Str(s=docstring)))
+                    if indent:
+                        if indent == ' ' * node.col_offset:
+                            node.body.insert(0, ast.Expr(value=ast.Str(s=docstring)))
+                        elif indent == '':
+                            docstring_with_newline = f'{docstring}'
+                            node.body.insert(0, ast.Expr(value=ast.Str(s=docstring_with_newline)))
+                    else:
+                        node.body.insert(0, ast.Expr(value=ast.Str(s=docstring)))
+
 
     # Write the modified code back to the file
     with open(file_path, 'w') as file:
