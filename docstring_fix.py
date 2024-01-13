@@ -6,6 +6,12 @@ def generate_docstring(node):
     """Generate a docstring for the given AST node."""
     indent = ''
 
+    if isinstance(node, ast.ClassDef):
+        # Add module-level docstring right before the class definition
+        module_docstring = '\n{} module\n'.format(node.name)
+        # Add a newline character after the class docstring
+        return module_docstring + '\n', ''
+
     # Check if the function is at the beginning of the line or indented
     if node.col_offset == 0:
         indent = ''
@@ -14,10 +20,7 @@ def generate_docstring(node):
         indent = ' ' * node.col_offset
         return f'\n{indent}    {node.name} - Add a brief here.\n    {indent}', indent
 
-    if isinstance(node, ast.ClassDef):
-        return f'\n    {node.name} - Add a brief description here.\n    '
-    else:
-        return None
+    return None
 
 def create_backup(file_path):
     """Create a backup of the original file with a .bak extension."""
@@ -40,15 +43,25 @@ def process_file(file_path, option, target_name=None):
             if option == 1 or (option == 2 and node.name == target_name):
                 (docstring, indent) = generate_docstring(node)
                 if docstring:
-                    if indent:
-                        if indent == ' ' * node.col_offset:
-                            node.body.insert(0, ast.Expr(value=ast.Str(s=docstring)))
-                        elif indent == '':
-                            docstring_with_newline = f'{docstring}'
-                            node.body.insert(0, ast.Expr(value=ast.Str(s=docstring_with_newline)))
+                    if isinstance(node, ast.ClassDef):
+                        # Insert docstring before and after the ClassDef
+                        tree.body.insert(tree.body.index(node), ast.Expr(value=ast.Constant(value=docstring)))
+                        tree.body.insert(tree.body.index(node) + 1, ast.Expr(value=ast.Constant(value='')))  # Add an empty line
+                        tree.body.insert(tree.body.index(node) + 2, ast.Expr(value=ast.Constant(value=docstring)))
+                        # Adjust class definition line
+                        node.lineno += 1
                     else:
-                        node.body.insert(0, ast.Expr(value=ast.Str(s=docstring)))
-
+                        if indent:
+                            if indent == ' ' * node.col_offset:
+                                node.body.insert(0, ast.Expr(value=ast.Constant(value=docstring)))
+                                node.body.insert(1, ast.Expr(value=ast.Constant(value=docstring)))
+                            elif indent == '':
+                                docstring_with_newline = f'{docstring}'
+                                node.body.insert(0, ast.Expr(value=ast.Constant(value=docstring_with_newline)))
+                                node.body.insert(1, ast.Expr(value=ast.Constant(value=docstring_with_newline)))
+                        else:
+                            node.body.insert(0, ast.Expr(value=ast.Constant(value=docstring)))
+                            node.body.insert(1, ast.Expr(value=ast.Constant(value=docstring)))
 
     # Write the modified code back to the file
     with open(file_path, 'w') as file:
