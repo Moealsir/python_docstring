@@ -13,7 +13,9 @@ def generate_docstring(filename, target_function=None):
     for line in lines:
         line = line.rstrip('\n')
         if re.match(r'^\s*class\s+', line):  # Class found
-            result.append('\n\n"""\n{} module\n"""\n\n\n{}'.format(line.split(':')[1].strip(), line))
+            class_name = line.split(':')[0].split()[-1].strip()
+            result.append('\n\n"""\n{} module\n"""\n\n\n{}'.format(class_name, line))
+            result.append('    """\n    {} - Add a brief here.\n    """'.format(class_name))
             in_class = True
         elif re.match(r'^\s*def\s+', line):  # Function found
             if target_function is None or target_function == line.split('(')[0].split()[-1]:
