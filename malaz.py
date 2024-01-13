@@ -1,6 +1,7 @@
 import re
 import sys
 import argparse
+import shutil
 
 def generate_docstring(filename, target_function=None):
     with open(filename, 'r') as file:
@@ -36,6 +37,12 @@ def generate_docstring(filename, target_function=None):
     with open(filename, 'w') as file:
         file.write('\n'.join(result))
 
+def create_backup(file_path):
+    """Create a backup of the original file with a .bak extension."""
+    backup_path = file_path + ".bak"
+    shutil.copyfile(file_path, backup_path)
+    print(f"Backup created: {backup_path}")
+
 def main():
     parser = argparse.ArgumentParser(description='Generate docstrings for Python code based on PEP 8 standards.')
     parser.add_argument('filename', help='Name of the Python file')
@@ -48,8 +55,10 @@ def main():
     if args.none:
         print("No docstrings will be generated.")
     elif args.all:
+        create_backup(args.filename)
         generate_docstring(args.filename)
     elif args.specific:
+        create_backup(args.filename)
         generate_docstring(args.filename, args.specific)
     else:
         print("Invalid option. Please choose -a, -s, or -n.")
