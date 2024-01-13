@@ -19,16 +19,16 @@ def generate_docstring(filename, target_function=None):
         if re.match(r'^\s*class\s+', line):  # Class found
             class_name = line.split(':')[0].split()[-1].strip()
             result.append('"""\n{} module\n"""\n\n\n{}'.format(class_name, line))
-            result.append('    """\n    {} - Add a brief here.\n    """'.format(class_name))
+            result.append('        {} - Add a brief here.\n    """'.format(class_name))
             in_class = True
         elif re.match(r'^\s*def\s+', line):  # Function found
             if target_function is None or target_function == line.split('(')[0].split()[-1]:
                 in_function = True
                 result.append('\n' + line)
                 if not line.startswith(' '):  # Def function at the start of the line
-                    result.append('    """\n    {} - Add a brief here.\n    """\n'.format(line.split('(')[0].split()[-1]))
+                    result.append('"""\n    {} - Add a brief here.\n    """\n'.format(line.split('(')[0].split()[-1]))
                 else:  # Def function after indentation
-                    result.append('        """\n        {} - Add a brief here.\n        """'.format(line.split('(')[0].split()[-1]))
+                    result.append('        """\n        {} - Add a brief here.\n        """\n\n'.format(line.split('(')[0].split()[-1]))
             else:
                 in_function = False
         elif in_function and line.strip():  # Inside the function
@@ -38,7 +38,7 @@ def generate_docstring(filename, target_function=None):
             in_class = False
 
     with open(filename, 'w') as file:
-        file.write('\n'.join(result))
+        file.write(''.join(result))
 
 def create_backup(file_path):
     """Create a backup of the original file with a .bak extension."""
