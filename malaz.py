@@ -11,11 +11,14 @@ def generate_docstring(filename, target_function=None):
     in_function = False
     in_class = False
 
-    for line in lines:
-        line = line.rstrip('\n')
+    for i, line in enumerate(lines):
+        if i == 0 and line.startswith('#!'):  # Preserve the shebang line
+            result.append(line)
+            continue
+
         if re.match(r'^\s*class\s+', line):  # Class found
             class_name = line.split(':')[0].split()[-1].strip()
-            result.append('\n\n"""\n{} module\n"""\n\n\n{}'.format(class_name, line))
+            result.append('"""\n{} module\n"""\n\n\n{}'.format(class_name, line))
             result.append('    """\n    {} - Add a brief here.\n    """'.format(class_name))
             in_class = True
         elif re.match(r'^\s*def\s+', line):  # Function found
