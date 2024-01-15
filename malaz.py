@@ -44,7 +44,7 @@ def generate_docstring(filename, target_function=None):
                 if not line.startswith(' '):  # Def function at the start of the line
                     if not any(line.strip() == '"""' for line in lines[i+1:]):
                         class_docstring = '    """\n    {} - Add a brief here.\n    """\n\n'.format(function_name)
-                        result.append('\n"""\n{} - Add a brief here.\n"""\n\n'.format(function_name))
+                        result.append('\n"""\n{} - Add a short brief here.\n"""\n\n\n'.format(function_name))
                         result.append(line)
                         result.append(class_docstring)  # Add the class docstring above the function definition
                 else:
